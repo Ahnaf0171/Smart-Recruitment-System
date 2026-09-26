@@ -1,0 +1,22 @@
+# Python-generated files
+.dockerignore
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+*.mp4
+*.pyc 
+*.sqlite3
+/media/
+test.py
+# Virtual environments
+.venv
+.env
+
+backend/staticfiles/
+
+*.ppk
+django-key.ppk
+shohoj-niyog.ppk
