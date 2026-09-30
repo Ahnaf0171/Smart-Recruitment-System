@@ -21,7 +21,7 @@ def get_db_handle(db_name):
     global _client, _indexes_created
 
     if _client is None:
-        _client = MongoClient(uri)
+        _client = MongoClient(uri, serverSelectionTimeoutMS=5000)
 
     if db_name not in _db_cache:
         _db_cache[db_name] = _client[db_name]

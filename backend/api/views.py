@@ -19,7 +19,7 @@ from functools import lru_cache
 
 from django.utils.dateparse import parse_datetime
 from logics.utils.tasks import run_candidate_graph
-from datetime import timedelta
+from datetime import timedelta, timezone as dt_timezone
 
 load_env()
 
@@ -203,27 +203,48 @@ def get_single_question(request, session_id):   ## To Display Single Question an
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     else:
-        docs= collection.find_one({'_id':oid}, projection= {'qa_pairs':1, '_id':0})
+        docs = collection.find_one(
+            {'_id': oid},
+            projection={'qa_pairs': 1, 'scheduled': 1, '_id': 0}
+        )
         if not docs:
             return Response({"error": "Document not found"}, status=status.HTTP_404_NOT_FOUND)
-         
-        current_time = timezone.now()
+
+        # 1) age value ta nao
         scheduled_time = docs.get("scheduled")
+
+        if scheduled_time is None:
+            return Response({"error": "Interview schedule not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 2) tarpor naive hole UTC aware banao
+        if scheduled_time.tzinfo is None:
+            scheduled_time = scheduled_time.replace(tzinfo=dt_timezone.utc)
+
+        current_time = timezone.now()
 
         if current_time < scheduled_time:
             delta = scheduled_time - current_time
+            total_seconds = int(delta.total_seconds())
+            days, rem = divmod(total_seconds, 86400)
+            hours, rem = divmod(rem, 3600)
+            minutes, _ = divmod(rem, 60)
 
-            hours, remainder = divmod(int(delta.total_seconds()), 3600)
-            return Response({"message": f"{hours} Hours to start the interview"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({
+                "error": "Your interview has not started yet.",
+                "code": "INTERVIEW_NOT_STARTED",
+                "scheduled_time": scheduled_time.isoformat(),
+                "starts_in": {"days": days, "hours": hours, "minutes": minutes},
+            }, status=status.HTTP_403_FORBIDDEN)
 
         elif current_time > scheduled_time + timedelta(minutes=3):
-            return Response({"message": "The interview session has expired."}, status=status.HTTP_403_FORBIDDEN)
-        
-        else:
-            qa_pairs = docs.get("qa_pairs", [])
-            serializer = MongoQuestionSerializer(qa_pairs, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-            # status
+            return Response({
+                "error": "The interview session has expired.",
+                "code": "INTERVIEW_EXPIRED",
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        qa_pairs = docs.get("qa_pairs", [])
+        serializer = MongoQuestionSerializer(qa_pairs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 # status: pending, ongoing, completed
 
 

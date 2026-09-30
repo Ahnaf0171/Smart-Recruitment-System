@@ -115,6 +115,8 @@ CORS_ALLOW_METHODS=[
 CORS_URLS_REGEX = r"^/.*$"
 
 CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "https://shohoj-niyog.vercel.app",
     "https://16.16.186.219.sslip.io",
 ]
