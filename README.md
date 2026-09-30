@@ -45,7 +45,7 @@ The project backend is built with **Django** + **Django REST Framework**, with *
 git clone https://github.com/Ahnaf0171/Smart-Recruitment-System.git
 ```
 
-### 2️⃣ Create a Virtual Environment & Activate
+### 2 Create a Virtual Environment & Activate
 
 ```bash
 uv venv
@@ -53,7 +53,7 @@ source .venv/bin/activate   # Linux/Mac
 .venv\Scripts\activate      # Windows
 ```
 
-### 3️⃣ Install Dependencies
+### 3 Install Dependencies
 
 ```bash
 uv sync
