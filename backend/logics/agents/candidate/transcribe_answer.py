@@ -40,8 +40,8 @@ def transcribe_answer_node(state: CandidateGraphState) -> CandidateGraphState:
 
             print(f"Transcription successful for video {i+1}")
 
-        except:
-            print(f"Transcription failed for video {i+1}")
+        except Exception as e:
+            print(f"Transcription failed for video {i+1}: {e!r}")
             transcriptions.append("")
             
     return {
